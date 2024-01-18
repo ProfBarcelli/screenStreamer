@@ -8,7 +8,8 @@ import math
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
-
+from flask import Flask, send_file
+import io
 
 class Gui:
     def __init__(self,root):
@@ -20,18 +21,13 @@ class Gui:
         self.MCAST_PORT = 5007
         MULTICAST_TTL = 2
         self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
-
-        print("da controllare qui")
-        """
         try:
             myIp = gethostbyname(gethostname())
             root.title(myIp+":1234")
+            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(myIp))
         except:
             print("impossibile verificare ip")
-        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton("192.168.20.6"))
-        """
-
+            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
         self.sct = mss()
 
         img = numpy.array(self.sct.grab(self.sct.monitors[0]))
@@ -89,6 +85,7 @@ class Gui:
         # Put it in the display window
         self.imgL = tk.Label(self.root)
         self.imgL.place(x=10,y=py)
+        self.imgData = None
         self.updatePreview()
         py+=180
 
@@ -149,10 +146,10 @@ class Gui:
                 imgR = cv2.resize(imgR,None,fx=self.fx,fy=self.fx)
                 encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self.q]
                 result, imgData = cv2.imencode('.jpg', imgR, encode_param)
-                imgData = imgData.tobytes()
+                self.imgData = imgData.tobytes()
 
-                dataSize = len(imgData)
-                nPackets = math.ceil(len(imgData)/(self.MAX_PACKET_SIZE))
+                dataSize = len(self.imgData)
+                nPackets = math.ceil(dataSize/(self.MAX_PACKET_SIZE))
                 sentBytes=0
                 for j in range(nPackets):
                     packet = bytearray()
@@ -170,8 +167,45 @@ class Gui:
                 i+=1
             time.sleep(self.t)
 
+gui = None
+def main():
+    global gui
+    root=tk.Tk("Screen Streamer")
+    gui = Gui(root)
+    tk.mainloop()
 
+threading.Thread(target=main).start()
 
-root=tk.Tk("Screen Streamer")
-gui = Gui(root)
-tk.mainloop()
+app = Flask(__name__)
+@app.route('/')
+def index():
+    return """
+<html>
+<head>
+<title>Screen Streamer</title>
+</head>
+<body>
+<h1>Screen Streamer</h1>
+<img src="/logo.jpeg" id="logo" />
+<script>
+const update = function() {
+    const logo = document.getElementById('logo');
+    logo.src = '/logo.jpeg?'+Date.now();
+    setTimeout(update, 100);
+};
+update();
+</script>
+</body>
+</html>
+"""
+
+@app.route('/logo.jpeg', methods=['GET'])
+def logo():
+    global gui
+    if gui!=None and gui.streaming and gui.imgData!=None and len(gui.imgData)>0:
+        return send_file(io.BytesIO(gui.imgData), mimetype='image/jpeg')
+    else:
+        return ""
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=1234)

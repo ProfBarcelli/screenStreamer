@@ -1,3 +1,9 @@
 the server dependencies and mbe installed using pip with the following copmmand:
 
-pip install numpy opencv-contrib-python imutils  mss PILLOW pyautogui flask
+pip install numpy opencv-contrib-python imutils mss PILLOW pyautogui flask
+
+Idea: I should split the screen image into parts and then send them individually such that eahc fit in a single packer
+The receiver could then visualize the incoming packet in its position on the screen
+
+I could also make a diff wrt the previous frame and only send the parts that differ.
+Perhaps also send the whole thing once every second.
