@@ -1,0 +1,7 @@
+This software is organized as follows:
+ - there is a server.py (with some python dependencies) that opens a setings windows on the streamer computer and runs two services:
+   - a web server that serves a stream of jpeg images of the screen portions via HTTP
+   - a udp server that uses a multicast group to send the same stream of jpeg images to all the clients (both the python and qt versions are supported)
+ - there is a client.py (with some python dependencies) that simply viasulizes the stream of images received from the server
+ - there is a qtClient for which we provide a binary for windows and (hopefully linux (no dependencies)
+ 
