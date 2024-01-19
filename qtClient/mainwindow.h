@@ -25,5 +25,7 @@ private:
     Ui::MainWindow *ui;
     QUdpSocket *udpSocket4;
     QHostAddress *groupAddress4;
+    QByteArray data;
+    int old_i, n;
 };
 #endif // MAINWINDOW_H

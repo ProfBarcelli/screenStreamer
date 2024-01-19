@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QDebug>
-#include <QImageReader>
+#include <QImage>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(udpSocket4, &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
+    old_i=0;
+    n=0;
 }
 
 MainWindow::~MainWindow()
@@ -40,6 +42,23 @@ void MainWindow::processPendingDatagrams()
 
         ui->label->setText(tr("Received i: %1, j: %2, np: %3, ps: %4")
             .arg(i).arg(j).arg(np).arg(ps));
+
+        QByteArray byteArray((const char*)(datagram.constData()+16), ps);
+
+        if(j==0 || i!=old_i) {
+            old_i=i;
+            data = QByteArray((const char*)(datagram.constData()+16), ps);
+            n=1;
+        } else {
+            data.append((const char*)(datagram.constData()+16), ps);
+            n++;
+        }
+        if (j==np-1 && n==np) {
+            QImage img;
+            img.loadFromData(data);
+            ui->imageLabel->setPixmap(QPixmap::fromImage(img, Qt::AutoColor));
+            ui->imageLabel->show();
+        }
     }
 
 }

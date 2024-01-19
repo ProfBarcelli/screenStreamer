@@ -23,6 +23,13 @@ class Gui:
         self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         try:
             myIp = gethostbyname(gethostname())
+            """
+            for res in getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM):
+                ip = res[4][0]
+                if "192.168.20" in ip or "192.168.10" in ip:
+                    myIp = ip
+                    break
+            """
             root.title(myIp+":1234")
             self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(myIp))
         except:
@@ -39,7 +46,7 @@ class Gui:
         self.h=int(self.imgH)
         self.q=70
         self.fx=0.3
-        self.t=1.0/30
+        self.t=1.0/10
         self._imgR = numpy.array([])
 
         py=10
@@ -149,7 +156,7 @@ class Gui:
                 self.imgData = imgData.tobytes()
 
                 dataSize = len(self.imgData)
-                nPackets = math.ceil(dataSize/(self.MAX_PACKET_SIZE))
+                nPackets = math.ceil(dataSize/(self.MAX_PACKET_SIZE-16))
                 sentBytes=0
                 for j in range(nPackets):
                     packet = bytearray()
