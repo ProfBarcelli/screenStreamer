@@ -21,17 +21,18 @@ class Gui:
         self.MCAST_PORT = 5007
         MULTICAST_TTL = 2
         self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_LOOP, 1)
+        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
         try:
             myIp = gethostbyname(gethostname())
-            """
+            print(getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM))
             for res in getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM):
                 ip = res[4][0]
-                if "192.168.20" in ip or "192.168.10" in ip:
+                if "192.168.20" in ip or "192.168.10." in ip or "192.168.1." in ip:
                     myIp = ip
                     break
-            """
             root.title(myIp+":1234")
-            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(myIp))
+            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(myIp))            
         except:
             print("impossibile verificare ip")
             self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
@@ -213,6 +214,8 @@ def main():
     root=tk.Tk("Screen Streamer")
     gui = Gui(root)
     tk.mainloop()
+    import os, signal
+    os.kill(os.getpid(), signal.SIGINT)
 
 threading.Thread(target=main).start()
 
