@@ -2,6 +2,8 @@
 #include "./ui_mainwindow.h"
 #include <QDebug>
 #include <QImage>
+#include <QPainter>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -16,15 +18,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(udpSocket4, &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
-    old_i=0;
-    n=0;
+    /*old_i=0;
+    n=0;*/
+    image=NULL;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
+/*
 void MainWindow::processPendingDatagrams()
 {
     QByteArray datagram;
@@ -60,5 +63,41 @@ void MainWindow::processPendingDatagrams()
             ui->imageLabel->show();
         }
     }
+}*/
 
+
+void MainWindow::processPendingDatagrams()
+{
+    QByteArray datagram;
+    // using QUdpSocket::readDatagram (API since Qt 4)
+    while (udpSocket4->hasPendingDatagrams()) {
+        datagram.resize(qsizetype(udpSocket4->pendingDatagramSize()));
+        qDebug()<<"received packet of size "<<datagram.size();
+        udpSocket4->readDatagram(datagram.data(), datagram.size());
+        int w,h,x,y,ps;
+        memcpy(&w, datagram.constData(), sizeof(int));
+        memcpy(&h, datagram.constData()+4, sizeof(int));
+        memcpy(&x, datagram.constData()+8, sizeof(int));
+        memcpy(&y, datagram.constData()+12, sizeof(int));
+        memcpy(&ps, datagram.constData()+16, sizeof(int));
+        //qDebug()<<"i: "<<i<<", j: "<<j<<", np: "<<np<<", ps: "<<ps;
+
+        ui->label->setText(tr("Received w: %1, h: %2, x: %3, y: %4, ps: %5")
+            .arg(w).arg(h).arg(x).arg(y).arg(ps));
+
+        QByteArray byteArray((const char*)(datagram.constData()+20), ps);
+
+        if(image==NULL || image->size().width()!=w || image->size().height()!=h) {
+            image = new QImage(w,h,QImage::Format_RGB32);
+        }
+        QImage img;
+        img.loadFromData(byteArray);
+        QPainter p(image);
+        int xs=w/4, ys=h/4;
+        QRect rect(x*xs,y*ys,xs,ys);
+        p.drawImage(rect,img);
+        ui->imageLabel->setPixmap(QPixmap::fromImage(*image, Qt::AutoColor));
+        ui->imageLabel->resize(w,h);
+        //ui->imageLabel->show();
+    }
 }

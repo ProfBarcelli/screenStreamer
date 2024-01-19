@@ -21,9 +21,32 @@ multiSock.setsockopt(IPPROTO_IP, IP_ADD_MEMBERSHIP, mreq)
 
 N=60000
 
-imgDataBuffer=bytearray()
 
 cv2.namedWindow("Remote Screen",cv2.WINDOW_NORMAL)
+
+img = None
+while True:
+    packetData, address = multiSock.recvfrom(N)
+    w = int.from_bytes(packetData[0:4], byteorder='little')
+    h = int.from_bytes(packetData[4:8], byteorder='little')
+    x = int.from_bytes(packetData[8:12], byteorder='little')
+    y = int.from_bytes(packetData[12:16], byteorder='little')
+    ps = int.from_bytes(packetData[16:20], byteorder='little')
+    packetData = packetData[20:]
+    if img is None or w!=img.shape[1] or h!=img.shape[0]:
+        img = numpy.zeros((h,w,3),dtype=numpy.uint8)
+    imgData = numpy.frombuffer(packetData, dtype=numpy.uint8)
+    #print(len(imgData))
+    imgPart = cv2.imdecode(imgData, 1)
+    xs=int(w/4)
+    ys=int(h/4)
+    #print(w,h,x,y,ps,xs,ys)
+    img[y*ys:y*ys+ys,x*xs:x*xs+xs]=imgPart
+    cv2.imshow("Remote Screen",img)
+    cv2.waitKey(1)
+
+"""
+imgDataBuffer=bytearray()
 while True:
     packetData, address = multiSock.recvfrom(N)
     i = int.from_bytes(packetData[0:4], byteorder='little')
@@ -50,3 +73,4 @@ while True:
             cv2.waitKey(1)
         except:
             pass
+"""

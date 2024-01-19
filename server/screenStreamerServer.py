@@ -119,7 +119,8 @@ class Gui:
         else:
             self.streamButton.config(text="Start stream")
         if self.streaming:
-            threading.Thread(target=self.sendThread).start()        
+            #threading.Thread(target=self.sendThread).start()        
+            threading.Thread(target=self.sendThreadInParts).start()
 
 
     def updated(self,event):
@@ -142,6 +143,38 @@ class Gui:
             self.ys.set( self.hs.get()-1 )
         self.q = self.qs.get()
         self.fx = self.fxs.get()/100
+
+    def _send(self,w,h,x,y,imgData):
+        packet = bytearray()
+        packet.extend( int(w).to_bytes(4, byteorder='little') )
+        packet.extend( int(h).to_bytes(4, byteorder='little') )
+        packet.extend( int(x).to_bytes(4, byteorder='little') )
+        packet.extend( int(y).to_bytes(4, byteorder='little') )
+        packetSize = len(imgData)
+        packet.extend( int(packetSize).to_bytes(4, byteorder='little') )
+        packet.extend( imgData )
+        self.multiSock.sendto(packet, (self.MCAST_GRP, self.MCAST_PORT))
+
+    def sendThreadInParts(self):
+        old_imgData = [[0 for x in range(4)] for y in range(4)]
+        while self.streaming:
+            if len(self._imgR)>0:
+                imgR = self._imgR.copy()                
+                imgR = cv2.resize(imgR,None,fx=self.fx,fy=self.fx)
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self.q]
+                h, w = imgR.shape[0], imgR.shape[1]
+                ys = int(h/4)
+                xs = int(w/4)
+                for y in range(4):
+                    for x in range(4):
+                        img = imgR[y*ys:(y+1)*ys, x*xs:(x+1)*xs]
+                        result, imgData = cv2.imencode('.jpg', img, encode_param)
+                        partBytes=imgData.tobytes()
+                        if len(partBytes)>0 and partBytes!=old_imgData[y][x] and len(partBytes)<self.MAX_PACKET_SIZE-20:
+                            self._send(w,h,x,y,partBytes)
+                        old_imgData[y][x]=partBytes
+            time.sleep(self.t)
+        
 
     def sendThread(self):
         i=0

@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QUdpSocket>
 #include <QHostAddress>
-#include <QLabel>
+#include <QImage>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,7 +25,8 @@ private:
     Ui::MainWindow *ui;
     QUdpSocket *udpSocket4;
     QHostAddress *groupAddress4;
-    QByteArray data;
-    int old_i, n;
+    /*QByteArray data;
+    int old_i, n;*/
+    QImage *image;
 };
 #endif // MAINWINDOW_H
