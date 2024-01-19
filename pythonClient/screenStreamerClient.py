@@ -26,10 +26,10 @@ imgDataBuffer=bytearray()
 cv2.namedWindow("Remote Screen",cv2.WINDOW_NORMAL)
 while True:
     packetData, address = multiSock.recvfrom(N)
-    i = int.from_bytes(packetData[0:4], byteorder='big')
-    j = int.from_bytes(packetData[4:8], byteorder='big')
-    np = int.from_bytes(packetData[8:12], byteorder='big')
-    ps = int.from_bytes(packetData[12:16], byteorder='big')
+    i = int.from_bytes(packetData[0:4], byteorder='little')
+    j = int.from_bytes(packetData[4:8], byteorder='little')
+    np = int.from_bytes(packetData[8:12], byteorder='little')
+    ps = int.from_bytes(packetData[12:16], byteorder='little')
     print(i,j,np,ps)
     packetData = packetData[16:]
     if j==0 or i!=old_i:

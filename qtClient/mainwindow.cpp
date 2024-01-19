@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QDebug>
+#include <QImageReader>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -30,12 +31,15 @@ void MainWindow::processPendingDatagrams()
         datagram.resize(qsizetype(udpSocket4->pendingDatagramSize()));
         qDebug()<<"received packet of size "<<datagram.size();
         udpSocket4->readDatagram(datagram.data(), datagram.size());
-        int n;
-        memcpy(&n, datagram, sizeof(int));
-        qDebug()<<"value: "<<n;
+        int i, j, np, ps;
+        memcpy(&i, datagram.constData(), sizeof(int));
+        memcpy(&j, datagram.constData()+4, sizeof(int));
+        memcpy(&np, datagram.constData()+8, sizeof(int));
+        memcpy(&ps, datagram.constData()+12, sizeof(int));
+        qDebug()<<"i: "<<i<<", j: "<<j<<", np: "<<np<<", ps: "<<ps;
 
-        ui->label->setText(tr("Received IPv4 datagram of size %1, value: %2")
-                                 .arg(datagram.size()).arg(n));
+        ui->label->setText(tr("Received i: %1, j: %2, np: %3, ps: %4")
+            .arg(i).arg(j).arg(np).arg(ps));
     }
 
 }

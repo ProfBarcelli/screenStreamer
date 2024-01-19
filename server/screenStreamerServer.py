@@ -153,13 +153,13 @@ class Gui:
                 sentBytes=0
                 for j in range(nPackets):
                     packet = bytearray()
-                    packet.extend( int(i).to_bytes(4, byteorder='big') )
-                    packet.extend( int(j).to_bytes(4, byteorder='big') )
-                    packet.extend( int(nPackets).to_bytes(4, byteorder='big') )
+                    packet.extend( int(i).to_bytes(4, byteorder='little') )
+                    packet.extend( int(j).to_bytes(4, byteorder='little') )
+                    packet.extend( int(nPackets).to_bytes(4, byteorder='little') )
                     packetSize = dataSize-sentBytes
                     if packetSize>self.MAX_PACKET_SIZE-16:
                         packetSize=self.MAX_PACKET_SIZE-16
-                    packet.extend( int(packetSize).to_bytes(4, byteorder='big') )
+                    packet.extend( int(packetSize).to_bytes(4, byteorder='little') )
                     packet.extend( imgData[sentBytes:sentBytes+packetSize] )
                     self.multiSock.sendto(packet, (self.MCAST_GRP, self.MCAST_PORT))
                     sentBytes+=packetSize
