@@ -10,6 +10,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from flask import Flask, send_file
 import io
+from datetime import datetime, timedelta
+from time import sleep
 
 class Gui:
     def __init__(self,root):
@@ -23,21 +25,7 @@ class Gui:
         self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_LOOP, 1)
         self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, self.MULTICAST_TTL)
-        """
-        try:
-            myIp = gethostbyname(gethostname())
-            print(getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM))
-            for res in getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM):
-                ip = res[4][0]
-                if "192.168.20" in ip or "192.168.10." in ip or "192.168.1." in ip:
-                    myIp = ip
-                    break
-            root.title(myIp+":1234")
-            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(myIp))            
-        except:
-            print("impossibile verificare ip")
-            self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
-        """
+        self._packet_queue = [[[None,datetime.now()] for x in range(4)] for y in range(4)]
 
         self.sct = mss()
 
@@ -186,9 +174,11 @@ class Gui:
         packetSize = len(imgData)
         packet.extend( int(packetSize).to_bytes(4, byteorder='little') )
         packet.extend( imgData )
-        self.multiSock.sendto(packet, (self.MCAST_GRP, self.MCAST_PORT))
+        #self.multiSock.sendto(packet, (self.MCAST_GRP, self.MCAST_PORT))
+        self._packet_queue[y][x] = [packet,datetime.now()-timedelta(seconds=2)]
 
     def sendThreadInParts(self):
+        threading.Thread(target=self._packet_queue_comsuption_thread).start()
         old_imgData = [[0 for x in range(4)] for y in range(4)]
         while self.streaming:
             if len(self._imgR)>0:
@@ -204,11 +194,10 @@ class Gui:
                         result, imgData = cv2.imencode('.jpg', img, encode_param)
                         partBytes=imgData.tobytes()
                         if len(partBytes)>0 and partBytes!=old_imgData[y][x] and len(partBytes)<self.MAX_PACKET_SIZE-20:
-                            self._send(w,h,x,y,partBytes)
+                            self._send(w,h,x,y,partBytes)                            
                         old_imgData[y][x]=partBytes
             time.sleep(self.t)
         
-
     def sendThread(self):
         i=0
         while self.streaming:
@@ -239,6 +228,20 @@ class Gui:
                 print("sentBytes",sentBytes,"dataSize",dataSize)
                 i+=1
             time.sleep(self.t)
+
+    def _packet_queue_comsuption_thread(self):
+        while self.streaming:
+            for x in range(4):
+                for y in range(4):
+                    if self._packet_queue[y][x][0]!=None:
+                        dt = (datetime.now()-self._packet_queue[y][x][1]).total_seconds()
+                        if dt>1.0:
+                            print("sending x:",x,"y:",y," length:",len(self._packet_queue[y][x][0]))
+                            self.multiSock.sendto(self._packet_queue[y][x][0], (self.MCAST_GRP, self.MCAST_PORT))
+                            self._packet_queue[y][x][1] = datetime.now()
+            sleep(0.1)
+                        
+           
 
 gui = None
 def main():
