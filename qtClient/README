@@ -1,0 +1,3 @@
+I found out that even the statically compiled version of the client has some library dependencies.
+On xubuntu 22.04 they are:
+$sudo apt install libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1
