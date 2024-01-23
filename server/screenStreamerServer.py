@@ -19,10 +19,11 @@ class Gui:
         #UDP Multicast
         self.MCAST_GRP = '225.1.1.1'
         self.MCAST_PORT = 5007
-        MULTICAST_TTL = 2
+        self.MULTICAST_TTL = 2
         self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_LOOP, 1)
-        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
+        self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, self.MULTICAST_TTL)
+        """
         try:
             myIp = gethostbyname(gethostname())
             print(getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM))
@@ -36,6 +37,8 @@ class Gui:
         except:
             print("impossibile verificare ip")
             self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, MULTICAST_TTL)
+        """
+
         self.sct = mss()
 
         img = numpy.array(self.sct.grab(self.sct.monitors[0]))
@@ -86,7 +89,19 @@ class Gui:
         self.fxs.place(x=40,y=py)        
         py+=40
 
+        # define in which IP you want to stream
+        self.ql=tk.Label(root,text="IPS:")
+        self.ql.place(x=10,y=py+10)
+        ips=[ip[4][0] for ip in getaddrinfo(gethostname(), None, AF_INET, SOCK_DGRAM)]
+        ips.insert(0,"")
+        ips.append("127.0.0.1")
+        self.ipCombo = ttk.Combobox(self.root, values=ips, width = 11)
+        self.ipCombo.place(x=40,y=py+10)
+        self.ipCombo.bind("<<ComboboxSelected>>", self.combobox_value_changed)
+        py+=40
+
         self.streamButton = ttk.Button(self.root, text="Start Stream", command=self.toogleStream, width = 11)
+        self.streamButton["state"] = "disabled"
         self.streamButton.place(x=10,y=py)
         py+=40        
 
@@ -100,6 +115,23 @@ class Gui:
         self.streaming=False
 
         root.geometry("160x"+str(py+20))
+    
+    def combobox_value_changed(self, event):
+        ip = self.ipCombo.get()
+        print("combobox_value_changed",ip)
+        if len(ip)>0:
+            self.streamButton["state"] = "normal"
+            self.root.title(ip+":1234")
+            if ip=="127.0.0.1":
+                self.multiSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+                self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_LOOP, 1)
+                self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_TTL, self.MULTICAST_TTL)
+            else:
+                self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_IF, inet_aton(ip))
+                self.multiSock.setsockopt(IPPROTO_IP, IP_MULTICAST_LOOP, 0)
+
+        else:
+            self.streamButton["state"] = "disabled"
 
     def updatePreview(self):
         img = numpy.array(self.sct.grab(self.sct.monitors[0]))
