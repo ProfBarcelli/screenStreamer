@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::processPendingDatagrams);
     /*old_i=0;
     n=0;*/
-    image=NULL;
+    wholeImage=NULL;
 }
 
 MainWindow::~MainWindow()
@@ -85,18 +85,20 @@ void MainWindow::processPendingDatagrams()
         ui->label->setText(tr("Received w: %1, h: %2, x: %3, y: %4, ps: %5")
             .arg(w).arg(h).arg(x).arg(y).arg(ps));
 
-        QByteArray byteArray((const char*)(datagram.constData()+20), ps);
+        QByteArray sectionImageByteArray((const char*)(datagram.constData()+20), ps);
 
-        if(image==NULL || image->size().width()!=w || image->size().height()!=h) {
-            image = new QImage(w,h,QImage::Format_RGB32);
+        if(wholeImage==NULL ||
+            wholeImage->size().width()!=w ||
+            wholeImage->size().height()!=h) {
+            wholeImage = new QImage(w,h,QImage::Format_RGB32);
         }
-        QImage img;
-        img.loadFromData(byteArray);
-        QPainter p(image);
+        QImage sectionImage;
+        sectionImage.loadFromData(sectionImageByteArray);
+        QPainter p(wholeImage);
         int xs=w/4, ys=h/4;
         QRect rect(x*xs,y*ys,xs,ys);
-        p.drawImage(rect,img);
-        ui->imageLabel->setPixmap(QPixmap::fromImage(*image, Qt::AutoColor));
+        p.drawImage(rect,sectionImage);
+        ui->imageLabel->setPixmap(QPixmap::fromImage(sectionImage, Qt::AutoColor));
         ui->imageLabel->resize(w,h);
         //ui->imageLabel->show();
     }

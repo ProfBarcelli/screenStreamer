@@ -27,6 +27,6 @@ private:
     QHostAddress *groupAddress4;
     /*QByteArray data;
     int old_i, n;*/
-    QImage *image;
+    QImage *wholeImage;
 };
 #endif // MAINWINDOW_H
