@@ -40,7 +40,7 @@ while True:
     imgPart = cv2.imdecode(imgData, 1)
     xs=int(w/4)
     ys=int(h/4)
-    #print(w,h,x,y,ps,xs,ys)
+    print(w,h,x,y,ps,xs,ys,imgPart.shape)
     img[y*ys:y*ys+ys,x*xs:x*xs+xs]=imgPart
     cv2.imshow("Remote Screen",img)
     cv2.waitKey(1)
