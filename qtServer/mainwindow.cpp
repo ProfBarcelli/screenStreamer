@@ -86,13 +86,13 @@ void MainWindow::testClick() {
 void MainWindow::updateScreenPreview() {
     if(!isSampling) return;
     QImage grabbedImage = sampler->getSampledImage();
-    QImage small = grabbedImage.scaled( w*s/100, w*h/100, Qt::KeepAspectRatio);
+    QImage small = grabbedImage.scaled( w*s/100, h*s/100, Qt::KeepAspectRatio);
     ui->label->setPixmap(QPixmap::fromImage(small, Qt::AutoColor));
     ui->label->resize(w,h);
 
-    int w4 = w*s/100/4, h4 = h*s/100/4;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++) {
+    int w4 = w*s/100/N_PARTS_X, h4 = h*s/100/N_PARTS_Y;
+    for(int i=0;i<N_PARTS_X;i++)
+        for(int j=0;j<N_PARTS_Y;j++) {
             QRect rect(i*w4,j*h4,w4,h4);
             QImage partImg = small.copy(rect);
             QBuffer buffer;

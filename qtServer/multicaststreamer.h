@@ -7,6 +7,10 @@
 #include <QThread>
 #include "queuedpacket.h"
 
+#define N_PARTS_X 10
+#define N_PARTS_Y 10
+
+
 class MulticastStreamer : public QThread
 {
     Q_OBJECT
@@ -20,7 +24,7 @@ private:
     quint16 mCastGroupPort = 5007;
     QImage *image;
     bool isRunning;
-    QueuedPacket *parts[4][4];
+    QueuedPacket *parts[N_PARTS_X][N_PARTS_Y];
 
     void send(QueuedPacket *packet);
 };

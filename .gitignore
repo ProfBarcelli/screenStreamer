@@ -2,3 +2,7 @@ build-qtClient-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/
 build-qtClient-Desktop_Qt_6_6_1_MinGW_64_bit-Release/
 build-qtServer-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/
 build-qtServer-Desktop_Qt_6_6_1_MinGW_64_bit-Release/
+build-qtClient-Desktop-Debug/
+build-qtClient-Desktop-Release/
+build-qtServer-Desktop-Debug/
+build-qtServer-Desktop-Release/

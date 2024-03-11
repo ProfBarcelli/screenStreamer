@@ -4,8 +4,8 @@
 
 MulticastStreamer::MulticastStreamer() : QThread() {
     isRunning = false;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++)
+    for(int i=0;i<N_PARTS_Y;i++)
+        for(int j=0;j<N_PARTS_X;j++)
             parts[i][j]=NULL;
     udpSocket4 = new QUdpSocket(this);
     udpSocket4->bind(QHostAddress::AnyIPv4, 0);
@@ -18,8 +18,8 @@ void MulticastStreamer::run() {
     qDebug()<<"MulticastStreamer::run";
     while(isRunning) {
         qint64 cts = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        for(int i=0;i<4;i++)
-            for(int j=0;j<4;j++) {
+        for(int i=0;i<N_PARTS_X;i++)
+            for(int j=0;j<N_PARTS_Y;j++) {
                 if(parts[i][j]==NULL) continue;
                 quint64 n = cts-parts[i][j]->timestamp;
                 if(n > 1000) {
@@ -43,9 +43,14 @@ void MulticastStreamer::send(QueuedPacket *packet) {
 }
 
 void MulticastStreamer::updatePacket(int x, int y, QueuedPacket *qp) {
-    if(parts[x][y]!=NULL && parts[x][y]->data.size() == qp->data.size())
+    if(parts[x][y]!=NULL && parts[x][y]->data.size() == qp->data.size()) {
+        delete qp;
         return;
-    if(parts[x][y]!=NULL)
+    }
+    if(parts[x][y]!=NULL) {
+        parts[x][y]->mutex.lock();
+        parts[x][y]->mutex.unlock();
         delete parts[x][y];
+    }
     parts[x][y] = qp;
 }

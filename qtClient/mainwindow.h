@@ -6,6 +6,9 @@
 #include <QHostAddress>
 #include <QImage>
 
+#define N_PARTS_X 10
+#define N_PARTS_Y 10
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
