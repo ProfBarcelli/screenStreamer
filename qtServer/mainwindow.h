@@ -27,8 +27,9 @@ private:
     qint32 x,y,w,h,s,q;
 
 private slots:
-    void testClick();
+    void startStopButtonClick();
     void updateScreenPreview();
     void paramsUpdated();
+    void on_pushButton_clicked();
 };
 #endif // MAINWINDOW_H

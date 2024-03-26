@@ -8,8 +8,9 @@ class QueuedPacket
 {
 private:
 public:
-    QueuedPacket(QByteArray data);
+    QueuedPacket(int x, int y,QByteArray data);
     QByteArray data;
+    int x,y;
     qint64 timestamp;
     QMutex mutex;
 };

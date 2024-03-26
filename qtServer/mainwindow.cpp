@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->pushButton, &QPushButton::clicked,
-            this,           &MainWindow::testClick);
+            this,           &MainWindow::startStopButtonClick);
 
     sampler = NULL;
     isSampling = false;
@@ -31,7 +31,6 @@ MainWindow::MainWindow(QWidget *parent)
     mCastStreamer = new MulticastStreamer();
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
-
 }
 
 MainWindow::~MainWindow()
@@ -40,7 +39,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::testClick() {
+void MainWindow::startStopButtonClick() {
     /*
     //ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QScreen* screen = QGuiApplication::primaryScreen();
@@ -80,6 +79,7 @@ void MainWindow::testClick() {
         sampler->start();
     }
     isSampling = !isSampling;
+    mCastStreamer->togglePause();
     ui->pushButton->setText( isSampling ? "STOP sampling" : "Start sampling" );
 }
 
@@ -110,7 +110,7 @@ void MainWindow::updateScreenPreview() {
             for(int k=0;k<ps;k++)
                 data[20+k] = srcData[k];
             //qDebug()<<"w: "<<w<<", h:"<<h<<", x:"<<x<<", y:"<<y<<", ps:"<<ps;
-            mCastStreamer->updatePacket(i,j,new QueuedPacket( QByteArray( data,ps+20) ));
+            mCastStreamer->updatePacket(new QueuedPacket(i,j,QByteArray( data,ps+20) ));
         }
 }
 
@@ -127,3 +127,9 @@ void MainWindow::paramsUpdated() {
         sampler->setRectangle(x,y,w,h);
     qDebug()<<"x:"<<x<<", y:"<<y<<", w:"<<w<<", h:"<<h;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+
+}
+
