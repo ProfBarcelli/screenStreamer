@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>289</x>
       <y>20</y>
-      <width>80</width>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
@@ -66,7 +66,7 @@
      <number>100</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QSlider" name="ySlider">
@@ -82,7 +82,7 @@
      <number>100</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -114,7 +114,7 @@
      <number>50</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -159,7 +159,7 @@
      <number>50</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -188,7 +188,7 @@
      <number>30</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QSlider" name="qSlider">
@@ -204,7 +204,7 @@
      <number>30</number>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">

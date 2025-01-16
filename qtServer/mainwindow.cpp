@@ -28,7 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
         connect( *it, &QSlider::valueChanged, this, &MainWindow::paramsUpdated);
     paramsUpdated();
 
-    mCastStreamer = new MulticastStreamer();
+    nh=8, nw=8;
+    mCastStreamer = new MulticastStreamer(nh,nw);
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
 
@@ -90,27 +91,31 @@ void MainWindow::updateScreenPreview() {
     ui->label->setPixmap(QPixmap::fromImage(small, Qt::AutoColor));
     ui->label->resize(w,h);
 
-    int w4 = w*s/100/4, h4 = h*s/100/4;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++) {
+    int w4 = w*s/100/nw, h4 = h*s/100/nh;
+    qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
+    for(int i=0;i<nh;i++)
+        for(int j=0;j<nw;j++) {
             QRect rect(i*w4,j*h4,w4,h4);
             QImage partImg = small.copy(rect);
             QBuffer buffer;
             buffer.open(QIODevice::WriteOnly);
             partImg.save(&buffer,"JPEG",q);
             int ps = buffer.buffer().size();
-            char data[ps+20];
+            char data[ps+28];
             int *p=(int*)data;
             p[0]=w*s/100;
             p[1]=h*s/100;
             p[2]=i;
             p[3]=j;
-            p[4]=ps;
+            p[4]=nh;
+            p[5]=nw;
+            p[6]=ps;
+            //qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
             const char *srcData = buffer.buffer().constData();
             for(int k=0;k<ps;k++)
-                data[20+k] = srcData[k];
+                data[28+k] = srcData[k];
             //qDebug()<<"w: "<<w<<", h:"<<h<<", x:"<<x<<", y:"<<y<<", ps:"<<ps;
-            mCastStreamer->updatePacket(i,j,new QueuedPacket( QByteArray( data,ps+20) ));
+            mCastStreamer->updatePacket(i,j,new QueuedPacket( QByteArray( data,ps+28) ));
         }
 }
 
