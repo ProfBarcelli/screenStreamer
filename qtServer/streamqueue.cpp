@@ -4,9 +4,10 @@
 StreamQueue::StreamQueue() : QThread() {
     udpSocket4 = new QUdpSocket(this);
     udpSocket4->bind(QHostAddress::AnyIPv4, 0);
-    QVariant ttl=2;
+    QVariant ttl=4;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastTtlOption, ttl);
     mCastGroupAddress4 = new QHostAddress(QStringLiteral("225.1.1.1"));
+    udpSocket4->joinMulticastGroup(*mCastGroupAddress4);
 }
 
 

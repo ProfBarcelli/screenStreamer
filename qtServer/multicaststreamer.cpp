@@ -47,7 +47,7 @@ void MulticastStreamer::run() {
     }
 }
 
-/*
+
 void MulticastStreamer::send(QueuedPacket *packet) {
     if(packet==NULL) return;
     QByteArray data = packet->getData();

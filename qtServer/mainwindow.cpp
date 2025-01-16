@@ -80,7 +80,7 @@ void MainWindow::startStopButtonClick() {
         sampler->start();
     }
     isSampling = !isSampling;
-    mCastStreamer->togglePause();
+    //mCastStreamer->togglePause();
     ui->pushButton->setText( isSampling ? "STOP sampling" : "Start sampling" );
 }
 
