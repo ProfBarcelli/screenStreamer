@@ -8,6 +8,7 @@ class QueuedPacket
 {
 private:
     QByteArray data;
+    int x,y;
     qint64 timestamp;
     QMutex mutex;
 public:

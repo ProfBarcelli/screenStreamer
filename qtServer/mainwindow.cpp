@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->pushButton, &QPushButton::clicked,
-            this,           &MainWindow::testClick);
+            this,           &MainWindow::startStopButtonClick);
 
     sampler = NULL;
     isSampling = false;
@@ -32,7 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
     mCastStreamer = new MulticastStreamer(nh,nw);
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
-
 }
 
 MainWindow::~MainWindow()
@@ -41,7 +40,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::testClick() {
+void MainWindow::startStopButtonClick() {
     /*
     //ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QScreen* screen = QGuiApplication::primaryScreen();
@@ -81,13 +80,14 @@ void MainWindow::testClick() {
         sampler->start();
     }
     isSampling = !isSampling;
+    mCastStreamer->togglePause();
     ui->pushButton->setText( isSampling ? "STOP sampling" : "Start sampling" );
 }
 
 void MainWindow::updateScreenPreview() {
     if(!isSampling) return;
     QImage grabbedImage = sampler->getSampledImage();
-    QImage small = grabbedImage.scaled( w*s/100, w*h/100, Qt::KeepAspectRatio);
+    QImage small = grabbedImage.scaled( w*s/100, h*s/100, Qt::KeepAspectRatio);
     ui->label->setPixmap(QPixmap::fromImage(small, Qt::AutoColor));
     ui->label->resize(w,h);
 
@@ -132,3 +132,9 @@ void MainWindow::paramsUpdated() {
         sampler->setRectangle(x,y,w,h);
     qDebug()<<"x:"<<x<<", y:"<<y<<", w:"<<w<<", h:"<<h;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+
+}
+

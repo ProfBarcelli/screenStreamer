@@ -42,11 +42,12 @@ void MulticastStreamer::run() {
                 } else {
                     //qDebug()<<cts<<" "<<n;
                 }
-            }
+        }
         msleep(20);
     }
 }
 
+/*
 void MulticastStreamer::send(QueuedPacket *packet) {
     if(packet==NULL) return;
     QByteArray data = packet->getData();

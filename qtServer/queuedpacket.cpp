@@ -9,6 +9,8 @@ void QueuedPacket::setData(QByteArray data)
 {
     mutex.lock();
     this->data = data;
+    this->x=x;
+    this->y=y;
     timestamp = QDateTime().toMSecsSinceEpoch()-2000;
     mutex.unlock();
 }

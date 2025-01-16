@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QImage>
 #include <QPainter>
+#include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -72,7 +73,7 @@ void MainWindow::processPendingDatagrams()
     // using QUdpSocket::readDatagram (API since Qt 4)
     while (udpSocket4->hasPendingDatagrams()) {
         datagram.resize(qsizetype(udpSocket4->pendingDatagramSize()));
-        qDebug()<<"received packet of size "<<datagram.size();
+        //qDebug()<<"received packet of size "<<datagram.size();
         udpSocket4->readDatagram(datagram.data(), datagram.size());
         int w,h,x,y,nh,nw,ps;
         memcpy(&w, datagram.constData(), sizeof(int));
@@ -100,10 +101,12 @@ void MainWindow::processPendingDatagrams()
         QPainter p(wholeImage);
         int xs=w/nw, ys=h/nh;
         QRect rect(x*xs,y*ys,xs,ys);
+        qDebug()<<rect;
         p.drawImage(rect,sectionImage);
         //ui->imageLabel->setPixmap(QPixmap::fromImage(sectionImage, Qt::AutoColor));
         ui->imageLabel->setPixmap(QPixmap::fromImage(*wholeImage, Qt::AutoColor));
         ui->imageLabel->resize(w,h);
         //ui->imageLabel->show();
+
     }
 }

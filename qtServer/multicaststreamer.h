@@ -10,6 +10,10 @@
 #include "streamvisualizer.h"
 #include "streamqueue.h"
 
+#define N_PARTS_X 10
+#define N_PARTS_Y 10
+class LimitedSender;
+
 class MulticastStreamer : public QThread
 {
     Q_OBJECT
