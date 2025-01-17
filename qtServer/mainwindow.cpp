@@ -10,6 +10,7 @@
 #include <QVarLengthArray>
 #include <QSlider>
 #include "queuedpacket.h"
+#include <QtNetwork/QNetworkInterface>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,10 +29,26 @@ MainWindow::MainWindow(QWidget *parent)
         connect( *it, &QSlider::valueChanged, this, &MainWindow::paramsUpdated);
     paramsUpdated();
 
-    nh=8, nw=8;
+    nh=4, nw=4;
     mCastStreamer = new MulticastStreamer(nh,nw);
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
+
+    const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        if(!(interface.flags() & QNetworkInterface::IsUp && interface.name().contains("eth", Qt::CaseInsensitive)))
+            continue;
+        //qDebug()<<interface;
+        for (const QNetworkAddressEntry &addressEntry: interface.addressEntries()) {
+            if (addressEntry.ip().protocol() == QAbstractSocket::IPv4Protocol && addressEntry.ip() != localhost) {
+                ui->comboBox->addItem(addressEntry.ip().toString());
+                //qDebug()<<"   "<<addressEntry.ip().toString();
+                interfaces.append(interface);
+                break;
+            }
+            //qDebug()<<"   "<<addressEntry.ip()<<addressEntry.ip().protocol();
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -92,7 +109,7 @@ void MainWindow::updateScreenPreview() {
     ui->label->resize(w,h);
 
     int w4 = w*s/100/nw, h4 = h*s/100/nh;
-    qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
+    //qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
     for(int i=0;i<nh;i++)
         for(int j=0;j<nw;j++) {
             QRect rect(i*w4,j*h4,w4,h4);
@@ -136,5 +153,16 @@ void MainWindow::paramsUpdated() {
 void MainWindow::on_pushButton_clicked()
 {
 
+}
+
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    //qDebug()<<index;
+    if(index<interfaces.size()) {
+        qDebug()<<interfaces.at(index);
+        QNetworkInterface interface =  interfaces.at(index);
+        mCastStreamer->setInterface(interface);
+    }
 }
 

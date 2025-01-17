@@ -63,3 +63,9 @@ void MulticastStreamer::updatePacket(int x, int y, QueuedPacket *qp) {
     else
         parts[x][y]->setData(qp->getData());
 }
+
+void MulticastStreamer::setInterface(QNetworkInterface &interface)
+{
+    streamQueue.setInterface(interface);
+}
+

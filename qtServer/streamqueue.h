@@ -25,6 +25,7 @@ public:
     StreamQueue();
     void add(QByteArray packet);
     float getAvgSpeedKBs();
+    void setInterface(QNetworkInterface &interface);
 };
 
 #endif // STREAMQUEUE_H

@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>289</x>
-      <y>20</y>
-      <width>121</width>
+      <x>260</x>
+      <y>60</y>
+      <width>171</width>
       <height>24</height>
      </rect>
     </property>
@@ -43,7 +43,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>20</y>
       <width>21</width>
       <height>16</height>
@@ -56,7 +56,7 @@
    <widget class="QSlider" name="xSlider">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>20</y>
       <width>71</width>
       <height>16</height>
@@ -72,7 +72,7 @@
    <widget class="QSlider" name="ySlider">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>170</x>
       <y>20</y>
       <width>71</width>
       <height>16</height>
@@ -88,7 +88,7 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>140</x>
       <y>20</y>
       <width>21</width>
       <height>16</height>
@@ -101,7 +101,7 @@
    <widget class="QSlider" name="wSlider">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>40</y>
       <width>71</width>
       <height>16</height>
@@ -120,7 +120,7 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>140</x>
       <y>40</y>
       <width>21</width>
       <height>16</height>
@@ -133,7 +133,7 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>40</y>
       <width>21</width>
       <height>16</height>
@@ -146,7 +146,7 @@
    <widget class="QSlider" name="hSlider">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>170</x>
       <y>40</y>
       <width>71</width>
       <height>16</height>
@@ -165,7 +165,7 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>70</y>
       <width>21</width>
       <height>16</height>
@@ -178,7 +178,7 @@
    <widget class="QSlider" name="sSlider">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>70</y>
       <width>71</width>
       <height>16</height>
@@ -194,7 +194,7 @@
    <widget class="QSlider" name="qSlider">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>160</x>
       <y>70</y>
       <width>71</width>
       <height>16</height>
@@ -210,7 +210,7 @@
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>130</x>
       <y>70</y>
       <width>21</width>
       <height>16</height>
@@ -220,6 +220,29 @@
      <string>q</string>
     </property>
    </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>30</y>
+      <width>171</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>10</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Interfaccia di rete</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -227,7 +250,7 @@
      <x>0</x>
      <y>0</y>
      <width>448</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

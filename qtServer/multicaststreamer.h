@@ -21,6 +21,7 @@ class MulticastStreamer : public QThread
 public:
     MulticastStreamer(int nh, int nw);
     void updatePacket(int x, int y, QueuedPacket *qp);
+    void setInterface(QNetworkInterface &interface);
 private:
     /*QUdpSocket *udpSocket4;
     QHostAddress *mCastGroupAddress4;

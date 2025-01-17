@@ -14,7 +14,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    int nh, nw;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -26,11 +25,14 @@ private:
     MulticastStreamer *mCastStreamer;
     bool isSampling;
     qint32 x,y,w,h,s,q;
+    int nh, nw;
+    QList<QNetworkInterface> interfaces;
 
 private slots:
     void startStopButtonClick();
     void updateScreenPreview();
     void paramsUpdated();
     void on_pushButton_clicked();
+    void on_comboBox_currentIndexChanged(int index);
 };
 #endif // MAINWINDOW_H
