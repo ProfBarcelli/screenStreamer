@@ -5,23 +5,19 @@
 QNetworkInterface getEthernetInterface()
 {
     // Iterate through all network interfaces
-    int i=0;
     foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
         // Check if the interface is up and is an Ethernet type (wired connection)
         if (interface.flags() & QNetworkInterface::IsUp && interface.name().contains("eth", Qt::CaseInsensitive)) {
             qDebug()<<"Found it"<<interface;
-            if(i==0)
-                i=1;
-            else
-                return interface;
+            return interface;
         }
     }
     return QNetworkInterface();  // Return an empty QNetworkInterface if no Ethernet is found
 }
 
 
-StreamQueue::StreamQueue() : QThread() {/*
-    udpSocket4 = new QUdpSocket(this);
+StreamQueue::StreamQueue() : QThread() {
+    /*udpSocket4 = new QUdpSocket(this);
     udpSocket4->bind(QHostAddress::AnyIPv4, 0);
     QVariant ttl=255;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastTtlOption, ttl);
@@ -30,6 +26,8 @@ StreamQueue::StreamQueue() : QThread() {/*
     int loopFlag = 0;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastLoopbackOption,loopFlag);
     udpSocket4->setMulticastInterface(getEthernetInterface());*/
+    QNetworkInterface interface = getEthernetInterface();
+    setInterface(interface);
 }
 
 
@@ -43,7 +41,7 @@ void StreamQueue::run()
             udpSocket4->writeDatagram(data, *mCastGroupAddress4, mCastGroupPort);
             //qDebug()<<data.size();
             avgSize = avgSize*alpha + (1-alpha)*data.size();
-            QThread::msleep(100);
+            QThread::msleep(1);
             qDebug()<<packetsToSend.size();
         }
         else
@@ -77,6 +75,6 @@ void StreamQueue::setInterface(QNetworkInterface &interface)
     int loopFlag = 0;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastLoopbackOption,loopFlag);
     udpSocket4->setMulticastInterface(interface);
-    //qDebug()<<"Multicasting on "<<interface.humanReadableName();
+    qDebug()<<"Multicasting on "<<interface.humanReadableName();
 }
 

@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect( *it, &QSlider::valueChanged, this, &MainWindow::paramsUpdated);
     paramsUpdated();
 
-    nh=4, nw=4;
+    nh=2, nw=2;
     mCastStreamer = new MulticastStreamer(nh,nw);
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
