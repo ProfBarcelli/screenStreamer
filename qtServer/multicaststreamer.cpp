@@ -69,3 +69,8 @@ void MulticastStreamer::setInterface(QNetworkInterface &interface)
     streamQueue.setInterface(interface);
 }
 
+void MulticastStreamer::setMcastIp(QString ip)
+{
+    streamQueue.setMcastIp(ip);
+}
+

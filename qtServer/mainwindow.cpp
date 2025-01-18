@@ -49,6 +49,15 @@ MainWindow::MainWindow(QWidget *parent)
             //qDebug()<<"   "<<addressEntry.ip()<<addressEntry.ip().protocol();
         }
     }
+
+    mCastIps.append("225.1.1.1");
+    mCastIps.append("225.1.1.2");
+    mCastIps.append("225.1.1.3");
+    mCastIps.append("225.1.1.4");
+    ui->mCastComboBox->addItem("Stream 1");
+    ui->mCastComboBox->addItem("Stream 2");
+    ui->mCastComboBox->addItem("Stream 3");
+    ui->mCastComboBox->addItem("Stream 4");
 }
 
 MainWindow::~MainWindow()
@@ -98,7 +107,7 @@ void MainWindow::startStopButtonClick() {
     }
     isSampling = !isSampling;
     //mCastStreamer->togglePause();
-    ui->pushButton->setText( isSampling ? "STOP sampling" : "Start sampling" );
+    ui->pushButton->setText( isSampling ? "STOP" : "Start" );
 }
 
 void MainWindow::updateScreenPreview() {
@@ -164,5 +173,11 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
         QNetworkInterface interface =  interfaces.at(index);
         mCastStreamer->setInterface(interface);
     }
+}
+
+
+void MainWindow::on_mCastComboBox_currentIndexChanged(int index)
+{
+    mCastStreamer->setMcastIp(mCastIps.at(index));
 }
 

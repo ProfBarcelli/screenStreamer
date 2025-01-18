@@ -17,17 +17,8 @@ QNetworkInterface getEthernetInterface()
 
 
 StreamQueue::StreamQueue() : QThread() {
-    /*udpSocket4 = new QUdpSocket(this);
-    udpSocket4->bind(QHostAddress::AnyIPv4, 0);
-    QVariant ttl=255;
-    udpSocket4->setSocketOption(QAbstractSocket::MulticastTtlOption, ttl);
-    mCastGroupAddress4 = new QHostAddress(QStringLiteral("225.1.1.1"));
-    udpSocket4->joinMulticastGroup(*mCastGroupAddress4);
-    int loopFlag = 0;
-    udpSocket4->setSocketOption(QAbstractSocket::MulticastLoopbackOption,loopFlag);
-    udpSocket4->setMulticastInterface(getEthernetInterface());*/
-    QNetworkInterface interface = getEthernetInterface();
-    setInterface(interface);
+    interface = getEthernetInterface();
+    initMcast();
 }
 
 
@@ -42,7 +33,7 @@ void StreamQueue::run()
             //qDebug()<<data.size();
             avgSize = avgSize*alpha + (1-alpha)*data.size();
             QThread::msleep(1);
-            qDebug()<<packetsToSend.size();
+            //qDebug()<<packetsToSend.size();
         }
         else
             mutex.unlock();
@@ -64,17 +55,29 @@ float StreamQueue::getAvgSpeedKBs()
     return avgSize;
 }
 
-void StreamQueue::setInterface(QNetworkInterface &interface)
+void StreamQueue::initMcast()
 {
     udpSocket4 = new QUdpSocket(this);
     udpSocket4->bind(QHostAddress::AnyIPv4, 0);
     QVariant ttl=255;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastTtlOption, ttl);
-    mCastGroupAddress4 = new QHostAddress(QStringLiteral("225.1.1.1"));
+    mCastGroupAddress4 = new QHostAddress(mCastIp);
     udpSocket4->joinMulticastGroup(*mCastGroupAddress4);
     int loopFlag = 0;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastLoopbackOption,loopFlag);
     udpSocket4->setMulticastInterface(interface);
-    qDebug()<<"Multicasting on "<<interface.humanReadableName();
+    qDebug()<<"Multicasting on "<<interface.humanReadableName()<<" with IP "<<mCastIp;
+}
+
+void StreamQueue::setInterface(QNetworkInterface &interface)
+{
+    this->interface=interface;
+    initMcast();
+}
+
+void StreamQueue::setMcastIp(QString ip)
+{
+    mCastIp=ip;
+    initMcast();
 }
 

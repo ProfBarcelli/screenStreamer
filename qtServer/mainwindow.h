@@ -27,6 +27,7 @@ private:
     qint32 x,y,w,h,s,q;
     int nh, nw;
     QList<QNetworkInterface> interfaces;
+    QList<QString> mCastIps;
 
 private slots:
     void startStopButtonClick();
@@ -34,5 +35,6 @@ private slots:
     void paramsUpdated();
     void on_pushButton_clicked();
     void on_comboBox_currentIndexChanged(int index);
+    void on_mCastComboBox_currentIndexChanged(int index);
 };
 #endif // MAINWINDOW_H

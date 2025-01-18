@@ -17,14 +17,14 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>370</x>
       <y>60</y>
-      <width>171</width>
+      <width>61</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>start stream</string>
+     <string>Start</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -243,6 +243,16 @@
      <string>Interfaccia di rete</string>
     </property>
    </widget>
+   <widget class="QComboBox" name="mCastComboBox">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>60</y>
+      <width>101</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -250,7 +260,7 @@
      <x>0</x>
      <y>0</y>
      <width>448</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

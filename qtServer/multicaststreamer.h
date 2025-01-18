@@ -22,6 +22,7 @@ public:
     MulticastStreamer(int nh, int nw);
     void updatePacket(int x, int y, QueuedPacket *qp);
     void setInterface(QNetworkInterface &interface);
+    void setMcastIp(QString ip);
 private:
     /*QUdpSocket *udpSocket4;
     QHostAddress *mCastGroupAddress4;

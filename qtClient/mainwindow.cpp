@@ -11,17 +11,42 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    wholeImage=NULL;
+
+    mCastIps.append("225.1.1.1");
+    mCastIps.append("225.1.1.2");
+    mCastIps.append("225.1.1.3");
+    mCastIps.append("225.1.1.4");
+    ui->comboBox->addItem("Stream 1");
+    ui->comboBox->addItem("Stream 2");
+    ui->comboBox->addItem("Stream 3");
+    ui->comboBox->addItem("Stream 4");
+
+    //initMcast();
+}
+
+void MainWindow::initMcast() {
+    if(mCastIpIndex>=mCastIps.size())
+        return;
+
+    if(udpSocket4!=NULL) {
+        disconnect(udpSocket4,&QUdpSocket::readyRead,
+                   this, &MainWindow::processPendingDatagrams);
+        delete udpSocket4;
+    }
+
     udpSocket4 = new QUdpSocket(this);
 
-    groupAddress4 = new QHostAddress(QStringLiteral("225.1.1.1"));
+    QString ip = mCastIps.at(mCastIpIndex);
+    qDebug()<<ip;
+    groupAddress4 = new QHostAddress(ip);
     udpSocket4->bind(QHostAddress::AnyIPv4, 5007, QUdpSocket::ShareAddress);
     udpSocket4->joinMulticastGroup(*groupAddress4);
 
     connect(udpSocket4, &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
-    /*old_i=0;
-    n=0;*/
-    wholeImage=NULL;
+
+
 }
 
 MainWindow::~MainWindow()
@@ -101,7 +126,7 @@ void MainWindow::processPendingDatagrams()
         QPainter p(wholeImage);
         int xs=w/nw, ys=h/nh;
         QRect rect(x*xs,y*ys,xs,ys);
-        qDebug()<<rect;
+        //qDebug()<<rect;
         p.drawImage(rect,sectionImage);
         //ui->imageLabel->setPixmap(QPixmap::fromImage(sectionImage, Qt::AutoColor));
         ui->imageLabel->setPixmap(QPixmap::fromImage(*wholeImage, Qt::AutoColor));
@@ -110,3 +135,10 @@ void MainWindow::processPendingDatagrams()
 
     }
 }
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    mCastIpIndex = index;
+    initMcast();
+}
+
