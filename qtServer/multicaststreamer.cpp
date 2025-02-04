@@ -83,3 +83,9 @@ void MulticastStreamer::sendText(QString qstr)
     streamQueue.sendImmediatly(data);
 }
 
+void MulticastStreamer::sendTestPacket(char* data, int size)
+{
+    QByteArray d(data,size);
+    streamQueue.sendImmediatly(d);
+}
+

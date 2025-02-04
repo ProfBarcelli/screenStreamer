@@ -159,12 +159,6 @@ void MainWindow::paramsUpdated() {
     qDebug()<<"x:"<<x<<", y:"<<y<<", w:"<<w<<", h:"<<h;
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-
-}
-
-
 void MainWindow::on_comboBox_currentIndexChanged(int index)
 {
     //qDebug()<<index;
@@ -184,7 +178,36 @@ void MainWindow::on_mCastComboBox_currentIndexChanged(int index)
 void MainWindow::on_sendTextPushButton_clicked()
 {
     //qDebug()<<ui->textEdit->toPlainText();
-    mCastStreamer->sendText(ui->textEdit->toPlainText());
-    ui->textEdit->clear();
+    QString str = ui->textEdit->toPlainText();
+    if(str.length()>0) {
+        mCastStreamer->sendText(str);
+        ui->textEdit->clear();
+    } else {
+        QImage image(100, 100, QImage::Format_RGB32);
+        image.fill(QColor(Qt::green));
+
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        image.save(&buffer,"JPEG",q);
+        int ps = buffer.buffer().size();
+        //qDebug()<<"bin size: "<<ps;
+        char data[ps+28];
+        int *p=(int*)data;
+        p[0]=2;
+        p[1]=2;
+        p[2]=0;
+        p[3]=0;
+        p[4]=1;
+        p[5]=1;
+        p[6]=ps;
+        /*
+        //qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
+        const char *srcData = buffer.buffer().constData();
+        for(int k=0;k<ps;k++)
+            data[28+k] = srcData[k];*/
+        memcpy(data+28,buffer.buffer().constData(),ps);
+        //qDebug()<<"w: "<<w<<", h:"<<h<<", x:"<<x<<", y:"<<y<<", ps:"<<ps;
+        mCastStreamer->sendTestPacket(data, ps+28);
+    }
 }
 

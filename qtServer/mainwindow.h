@@ -33,7 +33,6 @@ private slots:
     void startStopButtonClick();
     void updateScreenPreview();
     void paramsUpdated();
-    void on_pushButton_clicked();
     void on_comboBox_currentIndexChanged(int index);
     void on_mCastComboBox_currentIndexChanged(int index);
     void on_sendTextPushButton_clicked();

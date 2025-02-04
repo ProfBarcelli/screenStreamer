@@ -24,6 +24,7 @@ public:
     void setInterface(QNetworkInterface &interface);
     void setMcastIp(QString ip);
     void sendText(QString);
+    void sendTestPacket(char[],int);
 private:
     /*QUdpSocket *udpSocket4;
     QHostAddress *mCastGroupAddress4;
