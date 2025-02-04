@@ -31,6 +31,7 @@ public:
     float getAvgSpeedKBs();
     void setInterface(QNetworkInterface &interface);
     void setMcastIp(QString ip);
+    void sendImmediatly(QByteArray packet);
 };
 
 #endif // STREAMQUEUE_H

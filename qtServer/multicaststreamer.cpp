@@ -74,3 +74,12 @@ void MulticastStreamer::setMcastIp(QString ip)
     streamQueue.setMcastIp(ip);
 }
 
+void MulticastStreamer::sendText(QString qstr)
+{
+    int w=-1;
+    QByteArray data((char*)&w,sizeof(int));
+    data.append(qstr.toUtf8());
+    //qDebug()<<data.size();
+    streamQueue.sendImmediatly(data);
+}
+

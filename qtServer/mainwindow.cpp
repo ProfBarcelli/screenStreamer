@@ -181,3 +181,10 @@ void MainWindow::on_mCastComboBox_currentIndexChanged(int index)
     mCastStreamer->setMcastIp(mCastIps.at(index));
 }
 
+void MainWindow::on_sendTextPushButton_clicked()
+{
+    //qDebug()<<ui->textEdit->toPlainText();
+    mCastStreamer->sendText(ui->textEdit->toPlainText());
+    ui->textEdit->clear();
+}
+

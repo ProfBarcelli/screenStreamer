@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboBox->addItem("Stream 4");
 
     //initMcast();
+    textForm=NULL;
 }
 
 void MainWindow::initMcast() {
@@ -45,7 +46,6 @@ void MainWindow::initMcast() {
 
     connect(udpSocket4, &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
-
 
 }
 
@@ -102,6 +102,15 @@ void MainWindow::processPendingDatagrams()
         udpSocket4->readDatagram(datagram.data(), datagram.size());
         int w,h,x,y,nh,nw,ps;
         memcpy(&w, datagram.constData(), sizeof(int));
+        if(w<0) {
+            //if negative it indicates that this is a text packet
+            char str[datagram.size()-4];
+            memcpy(&str, datagram.constData()+4, datagram.size()-4);
+            QString s = QString(str);
+            qDebug()<<"Received text: "<<s<<" dgram size: "<<datagram.size();
+            displayText(s);
+            return;
+        }
         memcpy(&h, datagram.constData()+4, sizeof(int));
         memcpy(&x, datagram.constData()+8, sizeof(int));
         memcpy(&y, datagram.constData()+12, sizeof(int));
@@ -134,6 +143,14 @@ void MainWindow::processPendingDatagrams()
         //ui->imageLabel->show();
 
     }
+}
+
+void MainWindow::displayText(QString s) {
+    if(textForm==NULL) {
+        textForm = new TextForm();
+    }
+    textForm->setText(s);
+    textForm->show();
 }
 
 void MainWindow::on_comboBox_currentIndexChanged(int index)

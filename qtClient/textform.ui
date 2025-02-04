@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StreamVisualizer</class>
- <widget class="QWidget" name="StreamVisualizer">
+ <class>TextForm</class>
+ <widget class="QWidget" name="TextForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,19 +11,22 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Statistiche di invio</string>
+   <string>Testo dal docente</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QTextEdit" name="textEdit">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>371</width>
-     <height>271</height>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>300</height>
     </rect>
    </property>
-   <property name="text">
-    <string/>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
+   <property name="acceptRichText">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>

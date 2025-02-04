@@ -40,6 +40,11 @@ void StreamQueue::run()
     }
 }
 
+void StreamQueue::sendImmediatly(QByteArray packet) {
+    udpSocket4->writeDatagram(packet, *mCastGroupAddress4, mCastGroupPort);
+    qDebug()<<"Sent text packet of size "<<packet.size();
+}
+
 void StreamQueue::add(QByteArray packet)
 {
     mutex.lock();

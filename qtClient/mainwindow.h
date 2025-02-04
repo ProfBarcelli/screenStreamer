@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "textform.h"
+
 #include <QMainWindow>
 #include <QUdpSocket>
 #include <QHostAddress>
@@ -22,6 +24,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void displayText(QString s);
 private slots:
     void processPendingDatagrams();
 
@@ -37,5 +40,6 @@ private:
     QList<QString> mCastIps;
     int mCastIpIndex = 100;
     void initMcast();
+    TextForm *textForm;
 };
 #endif // MAINWINDOW_H

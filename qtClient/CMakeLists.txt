@@ -23,6 +23,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(qtClient
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        textform.h textform.cpp textform.ui
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET testMulticast APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -36,5 +36,6 @@ private slots:
     void on_pushButton_clicked();
     void on_comboBox_currentIndexChanged(int index);
     void on_mCastComboBox_currentIndexChanged(int index);
+    void on_sendTextPushButton_clicked();
 };
 #endif // MAINWINDOW_H
