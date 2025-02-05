@@ -17,6 +17,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <fcntl.h>
+#include <cstdio>
+
 using namespace std;
 
 class MulticastSocket {
@@ -75,6 +78,34 @@ public:
         *size=len;
         return data;
     }
+
+    char* nonBlockingReceive(int *size) {
+        int flags = fcntl(sockfd, F_GETFL, 0);
+        if (flags == -1) {
+            perror("fcntl failed");
+            return NULL;
+        }
+        if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+            perror("Failed to set non-blocking mode");
+            return NULL;
+        }
+        char buffer[1 << 20];
+        ssize_t len = recvfrom(sockfd, buffer, 1 << 20, 0, NULL, NULL);
+        if (len < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return NULL;
+            } else {
+                perror("Receive failed");
+                close(sockfd);
+                return NULL;
+            }
+        }
+        char* data = (char*)malloc(len);
+        std::memcpy(data, buffer, len);
+        *size = len;
+        return data;
+    }
+
     void closeSocket() {
         // Leave the multicast group and close the socket
         setsockopt(sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP, &group, sizeof(group));
@@ -84,11 +115,9 @@ public:
 
 
 void printPixelRGB(SDL_Surface *surface) {
-    // Lock the surface to access pixel data if needed (only if SDL surface needs to be locked)
     if (SDL_MUSTLOCK(surface)) {
         SDL_LockSurface(surface);
     }
-
     std::cout<<"Pitch "<<surface->pitch<<std::endl;
     if (surface) {
         SDL_PixelFormat* format = surface->format;
@@ -98,59 +127,29 @@ void printPixelRGB(SDL_Surface *surface) {
         std::cout << "Gmask: " << std::hex << format->Gmask << std::dec << std::endl;
         std::cout << "Bmask: " << std::hex << format->Bmask << std::dec << std::endl;
     }
-
-    // Get the pointer to the pixels
     Uint32 *pixels = (Uint32*)surface->pixels;
-
-    // Iterate through each pixel
     for (int y = 0; y < surface->h; y++) {
         for (int x = 0; x < surface->w; x++) {
-            // Get the pixel's value at (x, y)
             Uint32 pixel = pixels[y * surface->w + x];
-            //std::cout<<pixel<<std::endl;
-
-            // Extract RGB components using SDL_GetRGB
             Uint8 r, g, b;
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-
-            // Print the RGB values
             printf("Pixel (%d, %d) - R: %d, G: %d, B: %d\n", x, y, r, g, b);
         }
     }
-
-    // Unlock the surface if it was locked
     if (SDL_MUSTLOCK(surface)) {
         SDL_UnlockSurface(surface);
     }
 }
 
 SDL_Surface* decode_jpeg_to_surface(const unsigned char *jpeg_data, size_t jpeg_size) {
-    // Step 1: Decode the JPEG data with stb_image
     int width, height, channels;
     unsigned char *image_data = stbi_load_from_memory(jpeg_data, jpeg_size, &width, &height, &channels, 0);
-/*
-    for(int i=0;i<width * height * channels;i++)
-        std::cout<<i<<"->"<<(int)image_data[i]<<std::endl;
 
-    std::cout<<"w: "<<width<<", h: "<<height<<", c: "<<channels<<"\n";
-*/
     if (!image_data) {
         fprintf(stderr, "Failed to decode JPEG image with stb_image\n");
         return NULL;
     }
 
-    // Step 2: Convert image to an SDL_Surface
-    // If the image has 3 channels (RGB), we can use SDL_PIXELFORMAT_RGB888.
-    // If the image has 4 channels (RGBA), we can use SDL_PIXELFORMAT_RGBA8888.
-    /*int pitch = width * 3;
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(image_data, width, height,
-        24,                  // Bits per pixel (24 for RGB)
-        pitch,               // Pitch (row size in bytes, excluding padding)
-        0x0000FF,            // Red mask (0x0000FF = 8 bits for blue)
-        0x00FF00,            // Green mask (0x00FF00 = 8 bits for green)
-        0xFF0000,            // Blue mask (0xFF0000 = 8 bits for red)
-        0                    // No alpha channel (RGB, not RGBA)
-    );*/
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_ABGR8888);
     if (surface == nullptr) {
         std::cerr << "Surface could not be created! SDL_Error: " << SDL_GetError() << std::endl;
@@ -158,13 +157,8 @@ SDL_Surface* decode_jpeg_to_surface(const unsigned char *jpeg_data, size_t jpeg_
         return NULL;
     }
 
-
-    //SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));  // White
-
-
     SDL_LockSurface(surface);
     //memcpy(surface->pixels, image_data, width * height * channels);
-    
     unsigned char* pixels = (unsigned char*)surface -> pixels;
     for(int y=0;y<surface -> h;y++)
         for(int x=0;x<surface->w;x++) {
@@ -175,33 +169,31 @@ SDL_Surface* decode_jpeg_to_surface(const unsigned char *jpeg_data, size_t jpeg_
     }
     SDL_UnlockSurface(surface);
 
-    //printPixelRGB(surface);
-    // Step 4: Free the image data (stbi_load_from_memory copies the data into our surface)
     stbi_image_free(image_data);
-
     return surface;
 }
 
 class Visualizer {
 private:
     MulticastSocket *ms;
-    SDL_Renderer *renderer;
     bool doContinue;
+    SDL_mutex * mutex;
 public:
-    //SDL_Texture* texture;
     SDL_Surface* imgSurface;
-    Visualizer(MulticastSocket *ms, SDL_Renderer *renderer) {
+    SDL_Rect rect;
+    int w;
+    int h;
+    Visualizer(MulticastSocket *ms) {
         this->ms=ms;
-        this->renderer=renderer;
         imgSurface=NULL;
         doContinue=true;
+        mutex = SDL_CreateMutex();
     }
     void updateSurface(char *data, int size) {
-
+        lock();
         if(imgSurface!=NULL) {
             SDL_FreeSurface(imgSurface);
         }
-
         if(false) {
             int width=100,height=100;
             SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_RGBA8888);
@@ -215,41 +207,21 @@ public:
         } else {
             imgSurface=decode_jpeg_to_surface((const unsigned char*)data, size);
         }
-        /*
-        if(texture!=NULL) {
-            free(texture);
-        }
-
-        // Create a texture from the surface
-        texture = SDL_CreateTextureFromSurface(renderer, imgSurface);
-        SDL_FreeSurface(imgSurface);  // Free the surface after texture is created
-
-        if (!texture) {
-            std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << std::endl;
-            return;
-        }
-
-        // Get the width and height of the texture
-        //int width, height;
-        //SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-
-        // Print out the dimensions of the texture
-        //std::cout << "Texture width: " << width << ", height: " << height << std::endl;
-        */
+        unlock();
     }
     void receiveAndDisplay() {
-        std::cout<<"awating data\n";
         int n;
-        char *data = ms->receive(&n);
-        std::cout<<"reveived "<<n<<" bytes\n";
-
+        //char *data = ms->receive(&n);
+        char *data = ms->nonBlockingReceive(&n);
+        if(data==NULL)
+            return;
         int w,h,x,y,nh,nw,ps;
         memcpy(&w, data, sizeof(int));
         if(w<0) {
             char str[n-3];
             memcpy(&str, data+4, n-4);
             str[n-4]='\0';
-            std::cout<<"Received string: "<<str<<"\n";
+            std::cout<<"Received string:\n\n"<<str<<"\n\n";
             return;
         }
         memcpy(&h, data+4, sizeof(int));
@@ -258,7 +230,15 @@ public:
         memcpy(&nh, data+16, sizeof(int));
         memcpy(&nw, data+20, sizeof(int));
         memcpy(&ps, data+24, sizeof(int));
-        std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
+        //std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
+        this->w=w;
+        this->h=h;
+        int sx=w/nw;
+        int sy=h/nh;
+        rect.x=x*sx;
+        rect.y=y*sy;
+        rect.w=sx;
+        rect.h=sy;
 
         updateSurface(data+28,ps);
 
@@ -270,21 +250,20 @@ public:
     bool isRunning() {
         return doContinue;
     }
+    void lock() {
+        SDL_LockMutex(mutex);
+    }
+    void unlock() {
+        SDL_UnlockMutex(mutex);
+    }
 };
 
 int listenToSocketThread(void *pp) {
     Visualizer *visualizer = (Visualizer*)pp;
-    std::cout<<"Listening started\n";
     while(visualizer->isRunning())
     {
         visualizer->receiveAndDisplay();
-        std::cout<<"Video update\n";
     }
-    /*
-    for(int i=0;i<10;i++) {
-        cout<<"hello "<<i<<"\n";
-        usleep(1e6);
-    }*/
     return 0;
 }
 
@@ -295,7 +274,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Create a window
+    const char *streams[4] = {
+        "225.1.1.1",
+        "225.1.1.2",
+        "225.1.1.3",
+        "225.1.1.4"
+    };
+    int streamIndex=0;
+    if(argc>1) {
+        streamIndex = atoi(argv[1]);
+        if(streamIndex<0 || streamIndex>3)
+            streamIndex=0;
+    }    
+
     SDL_Window *window = SDL_CreateWindow("Schermo del docente", 
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
                                           640, 480, SDL_WINDOW_SHOWN);
@@ -305,7 +296,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Create a renderer
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         fprintf(stderr, "SDL_CreateRenderer Error: %s\n", SDL_GetError());
@@ -314,16 +304,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Main loop flag
     int quit = 0;
     SDL_Event e;
 
-    Visualizer visualizer(new MulticastSocket("225.1.1.1",5007), renderer);
+    Visualizer visualizer(new MulticastSocket(streams[streamIndex],5007));
 
     SDL_Thread* thread = NULL;
     thread= SDL_CreateThread(listenToSocketThread, "Listen To Socket Thread", (void*)&visualizer);
-
-   // Load JPEG file into memory (replace with actual file or binary data)
+    /*
     std::ifstream file("a.jpg", std::ios::binary);
     std::vector<uint8_t> jpegData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     if (jpegData.empty()) {
@@ -333,25 +321,10 @@ int main(int argc, char* argv[]) {
         IMG_Quit();
         SDL_Quit();
         return -1;
-    }
-    //visualizer.updateTexture((char*)jpegData.data(), jpegData.size());
-
-    //SDL_RenderClear(renderer);
-    /*
-    int width=100,height=100;
-    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_RGBA8888);
-    if (surface == nullptr) {
-        std::cerr << "Surface could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        SDL_Quit();
-        return NULL;
-    }
-    SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));  // White
-    visualizer.imgSurface = surface;
-    */
+    }*/
 
     // Main loop
     while (!quit) {
-        // Handle events on queue
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = 1;
@@ -360,25 +333,26 @@ int main(int argc, char* argv[]) {
 
         if(visualizer.imgSurface!=NULL) 
         {
+            visualizer.lock();
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, visualizer.imgSurface);
             if (texture == NULL) {
                 printf("Unable to create texture from surface: %s\n", SDL_GetError());
                 return 0;
             }
             //SDL_FreeSurface(surface);
-            SDL_Rect dstRect = {x:0, y:0, w:visualizer.imgSurface->w, h: visualizer.imgSurface->h};
-            SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+            //SDL_Rect dstRect = {x:0, y:0, w:visualizer.imgSurface->w, h: visualizer.imgSurface->h};
+            SDL_RenderCopy(renderer, texture, NULL,&visualizer.rect);// &dstRect);
+            visualizer.unlock();
             SDL_DestroyTexture(texture);
         }
 
-        // Draw the window contents
         SDL_RenderPresent(renderer);
     }
     visualizer.quit();
 
-    // Wait for the thread to finish
-    if(thread!=NULL)
+    if(thread!=NULL) {
         SDL_WaitThread(thread, NULL);
+    }
 
     // Cleanup and exit
     SDL_DestroyRenderer(renderer);

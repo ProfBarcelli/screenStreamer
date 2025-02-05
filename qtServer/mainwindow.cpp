@@ -184,7 +184,10 @@ void MainWindow::on_sendTextPushButton_clicked()
         ui->textEdit->clear();
     } else {
         QImage image(100, 100, QImage::Format_RGB32);
-        image.fill(QColor(Qt::green));
+        if(jTest==0) image.fill(QColor(Qt::red));
+        if(jTest==1) image.fill(QColor(Qt::green));
+        if(jTest==2) image.fill(QColor(Qt::blue));
+        jTest=(jTest+1)%3;
 
         QBuffer buffer;
         buffer.open(QIODevice::WriteOnly);
@@ -193,13 +196,15 @@ void MainWindow::on_sendTextPushButton_clicked()
         //qDebug()<<"bin size: "<<ps;
         char data[ps+28];
         int *p=(int*)data;
-        p[0]=2;
-        p[1]=2;
-        p[2]=0;
-        p[3]=0;
-        p[4]=1;
-        p[5]=1;
+        p[0]=200;
+        p[1]=200;
+        p[2]=iTest/2;
+        p[3]=iTest%2;
+        p[4]=2;
+        p[5]=2;
         p[6]=ps;
+
+        iTest = (iTest+1)%4;
         /*
         //qDebug()<<"Ricordarsi di cambiare il client per ricevere anche i dati nh e nw";
         const char *srcData = buffer.buffer().constData();

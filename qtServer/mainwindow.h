@@ -29,6 +29,8 @@ private:
     QList<QNetworkInterface> interfaces;
     QList<QString> mCastIps;
 
+    int iTest=0, jTest=0;
+
 private slots:
     void startStopButtonClick();
     void updateScreenPreview();
