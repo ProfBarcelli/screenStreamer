@@ -152,22 +152,26 @@ SDL_Surface* decode_jpeg_to_surface(const unsigned char *jpeg_data, size_t jpeg_
         0                    // No alpha channel (RGB, not RGBA)
     );*/
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_ABGR8888);
-    if (!surface) {
-        fprintf(stderr, "SDL_CreateRGBSurfaceWithFormat failed: %s\n", SDL_GetError());
-        stbi_image_free(image_data);
+    if (surface == nullptr) {
+        std::cerr << "Surface could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
         return NULL;
     }
 
+
+    //SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));  // White
+
+
     SDL_LockSurface(surface);
-    /*
-    memcpy(surface->pixels, image_data, width * height * channels);
-    */
-     unsigned char* pixels = (unsigned char*)surface -> pixels;
+    //memcpy(surface->pixels, image_data, width * height * channels);
+    
+    unsigned char* pixels = (unsigned char*)surface -> pixels;
     for(int y=0;y<surface -> h;y++)
         for(int x=0;x<surface->w;x++) {
             for(int c=0;c<3;c++) {
                 pixels[4 * (y * surface -> w + x) + c] = image_data[3 * (y * surface -> w + x) + c]; 
             }
+            pixels[4 * (y * surface -> w + x) + 3] = 255;
     }
     SDL_UnlockSurface(surface);
 
@@ -192,9 +196,25 @@ public:
         imgSurface=NULL;
         doContinue=true;
     }
-    void updateTexture(char *data, int size) {
+    void updateSurface(char *data, int size) {
 
-        SDL_Surface* imgSurface=decode_jpeg_to_surface((const unsigned char*)data, size);
+        if(imgSurface!=NULL) {
+            SDL_FreeSurface(imgSurface);
+        }
+
+        if(false) {
+            int width=100,height=100;
+            SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_RGBA8888);
+            if (surface == nullptr) {
+                std::cerr << "Surface could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+                SDL_Quit();
+                return;
+            }
+            SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));  // White
+            imgSurface = surface;
+        } else {
+            imgSurface=decode_jpeg_to_surface((const unsigned char*)data, size);
+        }
         /*
         if(texture!=NULL) {
             free(texture);
@@ -240,7 +260,7 @@ public:
         memcpy(&ps, data+24, sizeof(int));
         std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
 
-        updateTexture(data+28,ps);
+        updateSurface(data+28,ps);
 
         free(data);
     }
@@ -253,9 +273,9 @@ public:
 };
 
 int listenToSocketThread(void *pp) {
-    std::cout<<"Listening started\n";
     Visualizer *visualizer = (Visualizer*)pp;
-    //while(visualizer->isRunning())
+    std::cout<<"Listening started\n";
+    while(visualizer->isRunning())
     {
         visualizer->receiveAndDisplay();
         std::cout<<"Video update\n";
@@ -316,6 +336,19 @@ int main(int argc, char* argv[]) {
     }
     //visualizer.updateTexture((char*)jpegData.data(), jpegData.size());
 
+    //SDL_RenderClear(renderer);
+    /*
+    int width=100,height=100;
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,width,height,32,SDL_PIXELFORMAT_RGBA8888);
+    if (surface == nullptr) {
+        std::cerr << "Surface could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
+        return NULL;
+    }
+    SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));  // White
+    visualizer.imgSurface = surface;
+    */
+
     // Main loop
     while (!quit) {
         // Handle events on queue
@@ -325,15 +358,16 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if(visualizer.imgSurface!=NULL) {
-            //SDL_RenderClear(renderer);
+        if(visualizer.imgSurface!=NULL) 
+        {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, visualizer.imgSurface);
             if (texture == NULL) {
                 printf("Unable to create texture from surface: %s\n", SDL_GetError());
                 return 0;
             }
-            SDL_Rect destRect = { 0, 0, visualizer.imgSurface->w, visualizer.imgSurface->h }; // x, y are the position on screen
-            SDL_RenderCopy(renderer, texture, NULL, &destRect);
+            //SDL_FreeSurface(surface);
+            SDL_Rect dstRect = {x:0, y:0, w:visualizer.imgSurface->w, h: visualizer.imgSurface->h};
+            SDL_RenderCopy(renderer, texture, NULL, &dstRect);
             SDL_DestroyTexture(texture);
         }
 
