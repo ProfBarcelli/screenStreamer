@@ -230,7 +230,7 @@ public:
         memcpy(&nh, data+16, sizeof(int));
         memcpy(&nw, data+20, sizeof(int));
         memcpy(&ps, data+24, sizeof(int));
-        std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
+        //std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
         this->w=w;
         this->h=h;
         int sx=w/nw;
@@ -265,7 +265,7 @@ int listenToSocketThread(void *pp) {
     while(visualizer->isRunning())
     {
         visualizer->receiveAndDisplay();
-        usleep(1e5);
+        usleep(1e4);
     }
     return 0;
 }
