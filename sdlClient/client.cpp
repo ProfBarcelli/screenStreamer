@@ -190,7 +190,7 @@ public:
         mutex = SDL_CreateMutex();
     }
     void updateSurface(char *data, int size) {
-        lock();
+        //lock();
         if(imgSurface!=NULL) {
             SDL_FreeSurface(imgSurface);
         }
@@ -207,7 +207,7 @@ public:
         } else {
             imgSurface=decode_jpeg_to_surface((const unsigned char*)data, size);
         }
-        unlock();
+        //unlock();
     }
     void receiveAndDisplay() {
         int n;
@@ -230,17 +230,19 @@ public:
         memcpy(&nh, data+16, sizeof(int));
         memcpy(&nw, data+20, sizeof(int));
         memcpy(&ps, data+24, sizeof(int));
-        //std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
+        std::cout<<"w:"<<w<<", h: "<<h<<", x:"<<x<<", y:"<<y<<", nh:"<<nh<<", nw:"<<nw<<", ps:"<<ps<<" ___ n:"<<n<<"\n";
         this->w=w;
         this->h=h;
         int sx=w/nw;
         int sy=h/nh;
+
+        lock();
         rect.x=x*sx;
         rect.y=y*sy;
         rect.w=sx;
         rect.h=sy;
-
         updateSurface(data+28,ps);
+        unlock();
 
         free(data);
     }
