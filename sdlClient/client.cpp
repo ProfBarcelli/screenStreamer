@@ -265,7 +265,7 @@ int listenToSocketThread(void *pp) {
     while(visualizer->isRunning())
     {
         visualizer->receiveAndDisplay();
-        usleep(1e4);
+        //usleep(1e4);
     }
     return 0;
 }
