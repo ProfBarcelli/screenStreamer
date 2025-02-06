@@ -265,7 +265,7 @@ int listenToSocketThread(void *pp) {
     while(visualizer->isRunning())
     {
         visualizer->receiveAndDisplay();
-        //usleep(1e4);
+        usleep(1e4);
     }
     return 0;
 }
@@ -313,7 +313,7 @@ int main(int argc, char* argv[]) {
     Visualizer visualizer(new MulticastSocket(streams[streamIndex],5007));
 
     SDL_Thread* thread = NULL;
-    //thread= SDL_CreateThread(listenToSocketThread, "Listen To Socket Thread", (void*)&visualizer);
+    thread= SDL_CreateThread(listenToSocketThread, "Listen To Socket Thread", (void*)&visualizer);
     /*
     std::ifstream file("a.jpg", std::ios::binary);
     std::vector<uint8_t> jpegData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -350,7 +350,7 @@ int main(int argc, char* argv[]) {
         }
 
         SDL_RenderPresent(renderer);
-        SDL_Delay(100);
+        SDL_Delay(10);
     }
     visualizer.quit();
 
