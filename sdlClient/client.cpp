@@ -291,7 +291,7 @@ int main(int argc, char* argv[]) {
 
     SDL_Window *window = SDL_CreateWindow("Schermo del docente", 
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-                                          640, 480, SDL_WINDOW_SHOWN);
+                                          640, 480, SDL_WINDOW_SHOWN|SDL_WINDOWEVENT_RESIZED );
     if (!window) {
         fprintf(stderr, "SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
