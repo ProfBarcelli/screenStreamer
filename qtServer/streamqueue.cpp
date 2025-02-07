@@ -68,7 +68,7 @@ void StreamQueue::initMcast()
     udpSocket4->setSocketOption(QAbstractSocket::MulticastTtlOption, ttl);
     mCastGroupAddress4 = new QHostAddress(mCastIp);
     udpSocket4->joinMulticastGroup(*mCastGroupAddress4);
-    int loopFlag = 0;
+    int loopFlag = 1;
     udpSocket4->setSocketOption(QAbstractSocket::MulticastLoopbackOption,loopFlag);
     udpSocket4->setMulticastInterface(interface);
     qDebug()<<"Multicasting on "<<interface.humanReadableName()<<" with IP "<<mCastIp;

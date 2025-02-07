@@ -9,6 +9,7 @@
 #include <QByteArray>
 #include <QVarLengthArray>
 #include <QSlider>
+#include <QDir>
 #include "queuedpacket.h"
 #include <QtNetwork/QNetworkInterface>
 
@@ -18,18 +19,34 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    mCastStreamer=NULL;
+    qDebug()<<QDir::homePath();
+
     connect(ui->pushButton, &QPushButton::clicked,
             this,           &MainWindow::startStopButtonClick);
 
     sampler = NULL;
     isSampling = false;
 
+
+    mCastIps.append("225.1.1.1");
+    mCastIps.append("225.1.1.2");
+    mCastIps.append("225.1.1.3");
+    mCastIps.append("225.1.1.4");
+    ui->streamComboBox ->addItem("Stream 1");
+    ui->streamComboBox->addItem("Stream 2");
+    ui->streamComboBox->addItem("Stream 3");
+    ui->streamComboBox->addItem("Stream 4");
+
+    loadSettingsFromHomeFolder();
+
     QVarLengthArray sliders = {ui->xSlider,ui->ySlider,ui->wSlider,ui->hSlider,ui->sSlider,ui->qSlider};
     for(auto it = sliders.begin(); it < sliders.end(); it++)
         connect( *it, &QSlider::valueChanged, this, &MainWindow::paramsUpdated);
     paramsUpdated();
 
-    nh=2, nw=2;
+
+    //nh=4, nw=4;
     mCastStreamer = new MulticastStreamer(nh,nw);
     connect(mCastStreamer, &MulticastStreamer::finished, mCastStreamer, &QObject::deleteLater);
     mCastStreamer->start();
@@ -41,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
         //qDebug()<<interface;
         for (const QNetworkAddressEntry &addressEntry: interface.addressEntries()) {
             if (addressEntry.ip().protocol() == QAbstractSocket::IPv4Protocol && addressEntry.ip() != localhost) {
-                ui->comboBox->addItem(addressEntry.ip().toString());
+                ui->nicComboBox->addItem(addressEntry.ip().toString());
                 //qDebug()<<"   "<<addressEntry.ip().toString();
                 interfaces.append(interface);
                 break;
@@ -49,15 +66,60 @@ MainWindow::MainWindow(QWidget *parent)
             //qDebug()<<"   "<<addressEntry.ip()<<addressEntry.ip().protocol();
         }
     }
+}
 
-    mCastIps.append("225.1.1.1");
-    mCastIps.append("225.1.1.2");
-    mCastIps.append("225.1.1.3");
-    mCastIps.append("225.1.1.4");
-    ui->mCastComboBox->addItem("Stream 1");
-    ui->mCastComboBox->addItem("Stream 2");
-    ui->mCastComboBox->addItem("Stream 3");
-    ui->mCastComboBox->addItem("Stream 4");
+void MainWindow::loadSettingsFromHomeFolder() {
+    nh=2;
+    nw=2;
+
+    QFile *file = new QFile(QDir::homePath()+"/.qtServer.config");
+    if(!file->exists()) {
+        qDebug()<<"Il file "<<file->fileName()<<" non esiste, lo creo";
+        file->open(QIODevice::WriteOnly);
+        QTextStream out(file);
+        out << "nw:2\n";
+        out << "nh:2\n";
+        out << "x:0\n";
+        out << "y:0\n";
+        out << "w:50\n";
+        out << "h:50\n";
+        out << "q:70\n";
+        out << "s:100\n";
+        out << "streamNumber:0\n";
+        //file->flush();
+        file->close();
+        //file=new QFile (QDir::homePath()+"/.qtServer.config");
+    }
+    if(!file->open(QIODevice::ReadOnly)) {
+        qDebug()<<"non posso leggere il file "<<file->fileName()<< "Error:" << file->errorString();
+    }
+
+    QTextStream in(file);
+
+    while(!in.atEnd()) {
+        QString line = in.readLine();
+        //qDebug()<<line;
+        QStringList fields = line.split(":");
+        if(fields[0]=="nw") nw=fields[1].toInt();//qDebug()<<"nw : "<<fields[1];
+        if(fields[0]=="nh") nh=fields[1].toInt();
+        if(fields[0]=="x") x=fields[1].toInt();
+        if(fields[0]=="y") y=fields[1].toInt();
+        if(fields[0]=="w") w=fields[1].toInt();
+        if(fields[0]=="h") h=fields[1].toInt();
+        if(fields[0]=="q") q=fields[1].toInt();
+        if(fields[0]=="s") s=fields[1].toInt();
+        if(fields[0]=="streamNumber") {
+            ui->streamComboBox->setCurrentIndex(fields[1].toInt());
+        }
+    }
+    file->close();
+
+    ui->xSlider->setValue(x);
+    ui->ySlider->setValue(y);
+    ui->wSlider->setValue(w);
+    ui->hSlider->setValue(h);
+    ui->sSlider->setValue(s);
+    ui->qSlider->setValue(q);
 }
 
 MainWindow::~MainWindow()
@@ -71,7 +133,7 @@ void MainWindow::startStopButtonClick() {
     //ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QScreen* screen = QGuiApplication::primaryScreen();
     QSize ss = screen->size();
-    int w = ss.width()*(100-ui->xSlider->value())*ui->wSlider->value()/10000;
+    int w = ss.width()*(100-ui->xSlider->value())*uiwidth->wSlider->value()/10000;
     int h = ss.height()*(100-ui->ySlider->value())*ui->hSlider->value()/10000;
     QPixmap pixmap = screen->grabWindow(0);
     int x = ss.width()*ui->xSlider->value()/100;
@@ -157,28 +219,28 @@ void MainWindow::paramsUpdated() {
     if(sampler!=NULL)
         sampler->setRectangle(x,y,w,h);
     qDebug()<<"x:"<<x<<", y:"<<y<<", w:"<<w<<", h:"<<h;
-}
 
-void MainWindow::on_comboBox_currentIndexChanged(int index)
-{
-    //qDebug()<<index;
-    if(index<interfaces.size()) {
-        qDebug()<<interfaces.at(index);
-        QNetworkInterface interface =  interfaces.at(index);
-        mCastStreamer->setInterface(interface);
-    }
-}
+    QFile *file = new QFile(QDir::homePath()+"/.qtServer.config");
+    file->open(QIODevice::WriteOnly);
+    QTextStream out(file);
+    out << "nw:"<<nw<<"\n";
+    out << "nh:"<<nh<<"\n";
+    out << "x:"<<x<<"\n";
+    out << "y:"<<y<<"\n";
+    out << "w:"<<(int)(100*w/ss.width())<<"\n";
+    out << "h:"<<(int)(100*h/ss.height())<<"\n";
+    out << "q:"<<q<<"\n";
+    out << "s:"<<s<<"\n";
+    out << "streamNumber:"<<ui->streamComboBox->currentIndex()<<"\n";
+    file->close();
 
-
-void MainWindow::on_mCastComboBox_currentIndexChanged(int index)
-{
-    mCastStreamer->setMcastIp(mCastIps.at(index));
 }
 
 void MainWindow::on_sendTextPushButton_clicked()
 {
+    if(mCastStreamer==NULL) return;
     //qDebug()<<ui->textEdit->toPlainText();
-    QString str = ui->textEdit->toPlainText();
+    QString str = ui->textEdit->toPlainText()+"\0";
     if(str.length()>0) {
         mCastStreamer->sendText(str);
         ui->textEdit->clear();
@@ -214,5 +276,26 @@ void MainWindow::on_sendTextPushButton_clicked()
         //qDebug()<<"w: "<<w<<", h:"<<h<<", x:"<<x<<", y:"<<y<<", ps:"<<ps;
         mCastStreamer->sendTestPacket(data, ps+28);
     }
+}
+
+
+void MainWindow::on_nicComboBox_currentIndexChanged(int index)
+{
+    if(mCastStreamer==NULL) return;
+    //qDebug()<<index;
+    if(index<interfaces.size()) {
+        qDebug()<<interfaces.at(index);
+        QNetworkInterface interface =  interfaces.at(index);
+        mCastStreamer->setInterface(interface);
+    }
+    paramsUpdated();
+}
+
+
+void MainWindow::on_streamComboBox_currentIndexChanged(int index)
+{
+    if(mCastStreamer==NULL) return;
+    mCastStreamer->setMcastIp(mCastIps.at(index));
+    paramsUpdated();
 }
 

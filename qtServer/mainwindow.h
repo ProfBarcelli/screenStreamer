@@ -19,6 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void loadSettingsFromHomeFolder();
 private:
     Ui::MainWindow *ui;
     ScreenSampler *sampler;
@@ -35,8 +36,10 @@ private slots:
     void startStopButtonClick();
     void updateScreenPreview();
     void paramsUpdated();
-    void on_comboBox_currentIndexChanged(int index);
-    void on_mCastComboBox_currentIndexChanged(int index);
+    //void on_comboBox_currentIndexChanged(int index);
+    //void on_mCastComboBox_currentIndexChanged(int index);
     void on_sendTextPushButton_clicked();
+    void on_nicComboBox_currentIndexChanged(int index);
+    void on_streamComboBox_currentIndexChanged(int index);
 };
 #endif // MAINWINDOW_H
